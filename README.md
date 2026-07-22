@@ -2,32 +2,34 @@
 
 ## Project Summary
 
-In this project you will build and explain a small music recommender system.
-
-Your goal is to:
-
-- Represent songs and a user "taste profile" as data
-- Design a scoring rule that turns that data into recommendations
-- Evaluate what your system gets right and wrong
-- Reflect on how this mirrors real world AI recommenders
-
-Replace this paragraph with your own summary of what your version does.
+This project simulates a basic content-based music recommender. It represents
+songs and a user "taste profile" as data, scores every song in the catalog
+against that profile, and returns the top-ranked matches with plain-language
+explanations for why each song was chosen.
 
 ---
 
 ## How The System Works
 
-Explain your design in plain language.
+Real platforms like Spotify and YouTube blend two main approaches:
+**collaborative filtering** (recommending based on what similar users liked
+or listened to) and **content-based filtering** (recommending based on the
+actual attributes of the content itself — genre, tempo, mood, etc.). This
+project implements a simplified content-based system.
 
-Some prompts to answer:
+- **Input features**: each `Song` has `genre`, `mood`, `energy`,
+  `tempo_bpm`, `valence`, `danceability`, and `acousticness`.
+- **User preferences**: each `UserProfile` stores a `favorite_genre`,
+  `favorite_mood`, `target_energy`, and a `likes_acoustic` flag.
+- **Scoring**: `score_song()` compares a song to the user profile and awards
+  points — +2.0 for a genre match, +1.0 for a mood match, and up to +2.0 for
+  how close the song's energy is to the user's target energy (closer =
+  more points, using `2.0 * (1 - |energy_gap|)`).
+- **Ranking**: `recommend_songs()` scores every song in the catalog, then
+  sorts the results from highest to lowest score and returns the top `k`.
 
-- What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
-- What information does your `UserProfile` store
-- How does your `Recommender` compute a score for each song
-- How do you choose which songs to recommend
-
-You can include a simple diagram or bullet list if helpful.
+Data flow: **Input (User Prefs) → Process (score every song in the CSV) →
+Output (top K ranked recommendations with reasons)**.
 
 ---
 
@@ -41,69 +43,89 @@ You can include a simple diagram or bullet list if helpful.
    python -m venv .venv
    source .venv/bin/activate      # Mac or Linux
    .venv\Scripts\activate         # Windows
+   ```
 
 2. Install dependencies
 
-```bash
-pip install -r requirements.txt
-```
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 3. Run the app:
 
-```bash
-python -m src.main
-```
+   ```bash
+   python -m src.main
+   ```
 
 ### Running Tests
-
-Run the starter tests with:
 
 ```bash
 pytest
 ```
 
-You can add more tests in `tests/test_recommender.py`.
-
 ---
 
 ## Sample Recommendation Output
 
-Paste a sample of your recommender's output here as a text block so a reader can see what it produces:
-
 ```
-# e.g.:
-# User profile: genre=indie, mood=chill, energy=low
-# Recommendations:
-#   1. ...
-#   2. ...
-#   3. ...
+Loaded songs: 20
+
+=== Profile: High-Energy Pop ({'genre': 'pop', 'mood': 'happy', 'energy': 0.85}) ===
+
+Sunrise City - Score: 4.94
+Because: genre match (pop) +2.0; mood match (happy) +1.0; energy closeness (target 0.85) +1.94
+
+Gym Hero - Score: 3.84
+Because: genre match (pop) +2.0; energy closeness (target 0.85) +1.84
+
+City Lights Run - Score: 2.90
+Because: mood match (happy) +1.0; energy closeness (target 0.85) +1.9
+
+=== Profile: Chill Lofi ({'genre': 'lofi', 'mood': 'chill', 'energy': 0.35}) ===
+
+Library Rain - Score: 5.00
+Because: genre match (lofi) +2.0; mood match (chill) +1.0; energy closeness (target 0.35) +2.0
+
+Lofi Sunset - Score: 4.94
+Because: genre match (lofi) +2.0; mood match (chill) +1.0; energy closeness (target 0.35) +1.94
+
+=== Profile: Deep Intense Rock ({'genre': 'rock', 'mood': 'intense', 'energy': 0.9}) ===
+
+Storm Runner - Score: 4.98
+Because: genre match (rock) +2.0; mood match (intense) +1.0; energy closeness (target 0.9) +1.98
+
+Warrior Anthem - Score: 4.96
+Because: genre match (rock) +2.0; mood match (intense) +1.0; energy closeness (target 0.9) +1.96
 ```
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or demo video link here -->
+(Full output for all three profiles and all five recommendations is in
+`model_card.md` under Evaluation.)
 
 ---
 
 ## Experiments You Tried
 
-Use this section to document the experiments you ran. For example:
-
-- What happened when you changed the weight on genre from 2.0 to 0.5
-- What happened when you added tempo or valence to the score
-- How did your system behave for different types of users
+- **Weight shift**: doubling the energy weight (from 2.0 max to 4.0 max)
+  while halving the genre weight (from 2.0 to 1.0) made energy the dominant
+  signal — songs with the right vibe but wrong genre started outranking
+  genre-correct songs with mismatched energy. This showed how sensitive the
+  final ranking is to weight choices, not just to the underlying data.
+- **Feature removal**: temporarily removing the mood check collapsed ties
+  between songs that only differed by mood, meaning genre + energy alone
+  weren't always enough to separate similar songs in the same genre.
 
 ---
 
 ## Limitations and Risks
 
-Summarize some limitations of your recommender.
+- The catalog only has 20 songs, so recommendations for niche profiles
+  (e.g., "sad country") have very few real candidates to draw from.
+- The system has no concept of lyrics, cultural context, or listening
+  history — it only reasons about numeric/categorical attributes.
+- It may over-favor genres that are better represented in the dataset
+  (pop, lofi, and synthwave each have more entries than jazz or country).
 
-Examples:
-
-- It only works on a tiny catalog
-- It does not understand lyrics or language
-- It might over favor one genre or mood
-
-You will go deeper on this in your model card.
+See `model_card.md` for a deeper breakdown of bias and evaluation.
 
 ---
 
@@ -113,10 +135,8 @@ Read and complete `model_card.md`:
 
 [**Model Card**](model_card.md)
 
-Write 1 to 2 paragraphs here about what you learned:
-
-- about how recommenders turn data into predictions
-- about where bias or unfairness could show up in systems like this
-
-
-
+Building this made it clear how much a recommender's "personality" is just
+the weights a designer chose — the same catalog can feel very different
+depending on whether genre or energy is prioritized. It also showed how
+easily a system can develop blind spots for underrepresented categories in
+its dataset, without ever being explicitly programmed to be "unfair."
