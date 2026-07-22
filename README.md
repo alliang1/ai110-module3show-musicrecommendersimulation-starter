@@ -12,24 +12,22 @@ explanations for why each song was chosen.
 ## How The System Works
 
 Real platforms like Spotify and YouTube blend two main approaches:
-**collaborative filtering** (recommending based on what similar users liked
-or listened to) and **content-based filtering** (recommending based on the
-actual attributes of the content itself — genre, tempo, mood, etc.). This
+collaborative filtering and content-based filtering. This
 project implements a simplified content-based system.
 
-- **Input features**: each `Song` has `genre`, `mood`, `energy`,
+- Input features: each `Song` has `genre`, `mood`, `energy`,
   `tempo_bpm`, `valence`, `danceability`, and `acousticness`.
-- **User preferences**: each `UserProfile` stores a `favorite_genre`,
+- User preferences: each `UserProfile` stores a `favorite_genre`,
   `favorite_mood`, `target_energy`, and a `likes_acoustic` flag.
 - **Scoring**: `score_song()` compares a song to the user profile and awards
-  points — +2.0 for a genre match, +1.0 for a mood match, and up to +2.0 for
+  points so +2.0 for a genre match, +1.0 for a mood match, and up to +2.0 for
   how close the song's energy is to the user's target energy (closer =
   more points, using `2.0 * (1 - |energy_gap|)`).
-- **Ranking**: `recommend_songs()` scores every song in the catalog, then
+- Ranking: `recommend_songs()` scores every song in the catalog, then
   sorts the results from highest to lowest score and returns the top `k`.
 
-Data flow: **Input (User Prefs) → Process (score every song in the CSV) →
-Output (top K ranked recommendations with reasons)**.
+Data flow: Input (User Prefs) → Process (score every song in the CSV) →
+Output (top K ranked recommendations with reasons).
 
 ---
 
@@ -105,12 +103,12 @@ Because: genre match (rock) +2.0; mood match (intense) +1.0; energy closeness (t
 
 ## Experiments You Tried
 
-- **Weight shift**: doubling the energy weight (from 2.0 max to 4.0 max)
+- Weight shift: doubling the energy weight (from 2.0 max to 4.0 max)
   while halving the genre weight (from 2.0 to 1.0) made energy the dominant
-  signal — songs with the right vibe but wrong genre started outranking
-  genre-correct songs with mismatched energy. This showed how sensitive the
+  signal so songs with the right vibe but wrong genre started outranking
+  genre correct songs with mismatched energy. This showed how sensitive the
   final ranking is to weight choices, not just to the underlying data.
-- **Feature removal**: temporarily removing the mood check collapsed ties
+- Feature removal: temporarily removing the mood check collapsed ties
   between songs that only differed by mood, meaning genre + energy alone
   weren't always enough to separate similar songs in the same genre.
 
@@ -118,14 +116,10 @@ Because: genre match (rock) +2.0; mood match (intense) +1.0; energy closeness (t
 
 ## Limitations and Risks
 
-- The catalog only has 20 songs, so recommendations for niche profiles
-  (e.g., "sad country") have very few real candidates to draw from.
+- The catalog only has 20 songs, so recommendations for niche profiles  have very few real candidates to draw from.
 - The system has no concept of lyrics, cultural context, or listening
-  history — it only reasons about numeric/categorical attributes.
-- It may over-favor genres that are better represented in the dataset
-  (pop, lofi, and synthwave each have more entries than jazz or country).
-
-See `model_card.md` for a deeper breakdown of bias and evaluation.
+  history and it only reasons about numeric/categorical attributes.
+- It may over-favor genres that are better represented in the dataset.
 
 ---
 
@@ -136,7 +130,7 @@ Read and complete `model_card.md`:
 [**Model Card**](model_card.md)
 
 Building this made it clear how much a recommender's "personality" is just
-the weights a designer chose — the same catalog can feel very different
+the weights a designer chose like the same catalog can feel very different
 depending on whether genre or energy is prioritized. It also showed how
 easily a system can develop blind spots for underrepresented categories in
 its dataset, without ever being explicitly programmed to be "unfair."
