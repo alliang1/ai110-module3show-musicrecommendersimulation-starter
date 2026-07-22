@@ -9,10 +9,8 @@
 ## 2. Intended Use
 
 VibeFinder generates song recommendations for a single user based on a
-stated taste profile (favorite genre, favorite mood, and a target energy
-level). It assumes the user already knows roughly what they want ("I want
-something chill and low-energy") rather than trying to infer taste from
-listening history. This is a classroom simulation, not a production system —
+stated taste profile instead of trying to infer taste from
+listening history. This is a classroom simulation, not a production system like
 it's meant to illustrate how content-based recommenders work, not to
 recommend real music to real users at scale.
 
@@ -26,40 +24,39 @@ points for how well it matches:
 - A matching genre is worth the most points, since genre is usually the
   strongest signal of "this is my kind of music."
 - A matching mood adds a smaller bonus.
-- Energy is scored on a sliding scale — the closer a song's energy is to
+- Energy is scored on a sliding scale so the closer a song's energy is to
   what the user asked for, the more points it earns, even if the genre or
   mood don't match exactly.
 
 All songs get scored this way, then they're sorted from highest to lowest
-score, and the top 5 are shown to the user along with a plain-language
-reason for each one's score (e.g., "genre match +2.0; energy closeness
-+1.9").
+score, and the top 5 are shown to the user along with a plain language
+reason for each one's score.
 
 ---
 
 ## 4. Data
 
-- **Catalog size**: 20 songs.
-- **Genres represented**: pop, lofi, rock, ambient, jazz, synthwave, indie
+- Catalog size: 20 songs.
+- Genres represented: pop, lofi, rock, ambient, jazz, synthwave, indie
   pop, folk, edm, and country.
-- **Moods represented**: happy, chill, intense, relaxed, moody, focused,
+- Moods represented: happy, chill, intense, relaxed, moody, focused,
   sad.
-- **Attributes per song**: genre, mood, energy, tempo_bpm, valence,
+- Attributes per song: genre, mood, energy, tempo_bpm, valence,
   danceability, acousticness.
-- The original starter set had 10 songs; 10 more were added to broaden
+- The original starter set had 10 songs and 10 more were added to broaden
   genre and mood coverage (adding sad, relaxed, and edm songs that weren't
   present before).
 - Missing from the dataset: any notion of lyrics, language, artist
-  popularity, or release year — all things real platforms often use.
+  popularity, or release year.
 
 ---
 
 ## 5. Strengths
 
-- Performs well for users with a clear, singular taste — e.g., a
+- Performs well for users with a clear, singular taste for example
   "Chill Lofi" profile reliably surfaces the three lofi tracks in the
   catalog at the top of the list.
-- The reason strings make the scoring transparent — a user can see exactly
+- The reason strings make the scoring transparent so that a user can see exactly
   why a song was picked, not just that it was picked.
 - Handles partial matches gracefully: a song that only matches on energy
   still gets a reasonable score instead of being excluded entirely.
@@ -68,19 +65,16 @@ reason for each one's score (e.g., "genre match +2.0; energy closeness
 
 ## 6. Limitations and Bias
 
-The system currently over-relies on genre as the single strongest signal,
+The system currently over relies on genre as the single strongest signal,
 which means it can miss songs that would actually suit a user's mood or
-energy needs just because the genre label doesn't match exactly (e.g., a
-high-energy synthwave track might genuinely fit an "intense rock" listener
-better than a low-energy rock track does, but the rock track still outranks
-it). The dataset is also small and unevenly distributed across genres —
+energy needs just because the genre label doesn't match exactly. The dataset is also small and unevenly distributed across genres like
 pop, lofi, and synthwave each have more entries than jazz, folk, or
-country — so recommendations for underrepresented genres have fewer real
+country so recommendations for underrepresented genres have fewer real
 candidates to draw from and may feel repetitive. Because the scoring is
 purely additive, a song can also rack up a high score from mood and energy
 alone even with zero genre relevance, which can occasionally push a
-tangential song ("Gym Hero," a pop/intense track) into the top results for
-very different profiles just because it's high-energy.
+tangential song into the top results for
+very different profiles just because it's high energy.
 
 ---
 
@@ -142,19 +136,19 @@ Sunrise City - Score: 1.84
 Because: energy closeness (target 0.9) +1.84
 ```
 
-**Comparing the profiles**: the Pop and Rock profiles both put "Gym Hero"
-in their top 5, even though it's a pop song, not a rock song — its very
+Comparing the profiles: the Pop and Rock profiles both put "Gym Hero"
+in their top 5, even though it's a pop song, not a rock song and its very
 high energy (0.93) and intense mood are enough to overcome the missing
 genre match. The EDM-adjacent high-energy tracks tend to surface for any
 high-energy profile regardless of genre, while the Chill Lofi profile is
-much more genre-locked — its top 3 results are all literally tagged
+much more genre-locked that its top 3 results are all literally tagged
 "lofi," showing that when a user's target energy is low, energy and genre
 tend to agree more often in this dataset (most low-energy songs happen to
 already be lofi/ambient/jazz).
 
 What surprised us: the additive scoring means a song never fully drops out
-just for missing one criterion — it just falls lower in the ranking. This
-is different from a filter (which would exclude non-matches entirely) and
+just for missing one criterion so it just falls lower in the ranking. This
+is different from a filter and
 explains why songs like "Gym Hero" or "Sunrise City" can appear across
 very different profiles.
 
